@@ -28,5 +28,7 @@ This will create a locally hosted backend that you can access at `http://localho
 
 - Refactor hook logic
 - Refactor the styling of the app, using a proper color theme and design
+- Improve the display of an item when it has no picture
+- Implement a mobile-first design
 - Implement the favorites page
-- Cache the favorite items, so it wouldn't be necessary to query
+- Cache the favorite items, so it wouldn't be necessary to query the items every time
