@@ -1,46 +1,128 @@
-# Getting Started with Create React App
+# fe-interview-backend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This repository contains a local mock backend server for the brightwheel frontend coding challenge as well as an empty React app using `create-react-app`, which you should use as a starting point.
 
-## Available Scripts
+## Getting started
 
-In the project directory, you can run:
+Install project dependencies
 
-### `yarn start`
+```
+yarn install
+```
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Start the frontend and the mock backend together
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+```
+yarn start:mock
+```
 
-### `yarn test`
+Or start the backend by itself
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```
+yarn start:api
+```
 
-### `yarn build`
+This will create a locally hosted backend that you can access at `http://localhost:3001`
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Data models
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+This database will create a random collection of Products, Animals, and Companies for you to connect your app to. The data is re-generated each time you start the server.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```typescript
+interface Product {
+    type: 'product';
+    id: string;
+    starred: boolean;
+    name: string;
+    productCategory: string;
+    previewText: string;
+    image?: string;
+}
 
-### `yarn eject`
+interface Address {
+    address1: string;
+    address2?: string;
+    city: string;
+    state: string;
+    postalCode: string;
+}
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+interface Company {
+    type: 'company';
+    id: string;
+    starred: boolean;
+    name: string;
+    description: string;
+    address: Address;
+}
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+interface Taxonomy {
+    family: string;
+    scientificName: string;
+}
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+interface Animal = {
+    type: 'animal';
+    id: string;
+    starred: boolean;
+    taxonomy: Taxonomy;
+    name: string;
+    image?: string;
+}
+```
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+### Supported routes
 
-## Learn More
+```
+GET    /search
+GET    /search/:id
+POST   /search
+PUT    /search/:id
+PATCH  /search/:id
+DELETE /search/:id
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+When doing requests, it's good to know that:
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+- If you make POST, PUT, PATCH or DELETE requests, changes will be automatically and safely saved to `db.json` using [lowdb](https://github.com/typicode/lowdb).
+- Changes will persist so long as the server is running and will be overwritten next time the server is started
+- Your request body JSON should be object enclosed, just like the GET output. (for example `{"name": "Foobar"}`)
+- Id values are not mutable. Any `id` value in the body of your PUT or PATCH request will be ignored. Only a value set in a POST request will be respected, but only if not already taken.
+- A POST, PUT or PATCH request should include a `Content-Type: application/json` header to use the JSON in the request body. Otherwise it will return a 2XX status code, but no changes will be made to the data.
+
+### Search
+
+Add `q` to search ALL the fields for a string
+
+```
+GET /search?q=fish
+```
+
+Search individual fields by field name. Use `.` to access deep properties
+
+```
+GET /search?id=animal.5
+GET /search?name=snake
+GET /search?taxonomy.family=dog
+```
+
+Add `_like` to filter (RegExp supported)
+
+```
+GET /search?name_like=cat
+```
+
+### Full-text search
+
+### Paginate
+
+Use `_page` and optionally `_limit` to paginate returned data.
+
+In the `Link` header you'll get `first`, `prev`, `next` and `last` links.
+
+```
+GET /search?_page=7
+GET /search?_page=7&_limit=20
+```
+
+By default ALL matching results are returned
